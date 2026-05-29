@@ -1,4 +1,5 @@
 #include "min_heap.h"
+#include <stdlib.h>
 
 // Troca dois elementos e mantém pos[] consistente
 static void swap(MinHeap *h, int a, int b) {
@@ -119,4 +120,27 @@ int heap_vazia(const MinHeap *h) {
 
 int heap_contem(const MinHeap *h, int no) {
     return h->pos[no] != -1;
+}
+
+MinHeap *criar_heap(int total_nos) {
+    MinHeap *h = (MinHeap *)malloc(sizeof(MinHeap));
+    if (!h) return NULL;
+    heap_init(h, total_nos); 
+    return h;
+}
+
+void inserir_heap(MinHeap *h, int no, double dist) {
+    if (heap_contem(h, no)) {
+        heap_diminuir_chave(h, no, (float)dist); 
+    } else {
+        heap_inserir(h, no, (float)dist);
+    }
+}
+
+ItemHeap remover_min(MinHeap *h) {
+    return heap_remover_min(h); 
+}
+
+void liberar_heap(MinHeap *h) {
+    free(h);
 }

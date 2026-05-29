@@ -14,6 +14,11 @@ typedef struct {
     int      tamanho;  
 } MinHeap;
 
+typedef HeapItem ItemHeap;
+
+#define id_no no
+#define prioridade dist
+
 void heap_init(MinHeap *h, int total_nos);
 
 void heap_inserir(MinHeap *h, int no, float dist);
@@ -25,5 +30,13 @@ void heap_diminuir_chave(MinHeap *h, int no, float nova_dist);
 int heap_vazia(const MinHeap *h);
 
 int heap_contem(const MinHeap *h, int no);
+
+MinHeap *criar_heap(int total_nos);
+
+void inserir_heap(MinHeap *h, int no, double dist);
+
+ItemHeap remover_min(MinHeap *h);
+
+void liberar_heap(MinHeap *h);
 
 #endif
