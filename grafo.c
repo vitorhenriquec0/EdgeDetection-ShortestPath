@@ -45,8 +45,8 @@ Grafo *criar_grafo(const Imagem *img) {
 				
 				int id_v = ny * W + nx; 
 				double peso = calcular_peso(
-					img->pixels[y][x]; 
-					img->pixels[ny][nx]; 
+					img->pixels[y][x],
+					img->pixels[ny][nx]
 					); 
 
 				//insere aresta u->v na lista de u

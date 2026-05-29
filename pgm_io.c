@@ -22,35 +22,54 @@ Imagem *ler_pgm(const char *arquivo) {
 		return NULL; 
 	}
 
-	//consome restante da linha do magic 
+	//consome restante da linha do magic
 	char buf[512];
-	fgets(buf, sizeof(buf), f);
-
-	//pula linhas de comentário, lê dimensões
-	int largura, altura; 
-	while (1) {
-		fgets(buf, sizeof(buf), f); 
-		if (buf[0] != '#') {
-			sscanf(buf, "%d %d", &largura, &altura);
-			break; 	
-		}
+	if (fgets(buf, sizeof(buf), f) == NULL) {
+		fprintf(stderr, "[ERRO] ler_pgm: EOF apos magic\n"); fclose(f); return NULL;
 	}
 
-	//lê valor máximo 
-	int max_val; 
-	fscanf(f, "%d", &max_val); 
+	//pula linhas de comentário e busca dimensões
+	int largura = 0, altura = 0;
+	while (1) {
+		if (fgets(buf, sizeof(buf), f) == NULL) {
+			fprintf(stderr, "[ERRO] ler_pgm: EOF ao ler dimensoes\n"); fclose(f); return NULL;
+		}
+		if (buf[0] == '#') continue;
+		if (sscanf(buf, "%d %d", &largura, &altura) == 2) break;
+		// caso a linha contenha apenas um número, tentar ler a próxima
+	}
+
+	//lê valor máximo
+	int max_val = 0;
+	if (fscanf(f, "%d", &max_val) != 1) {
+		fprintf(stderr, "[ERRO] ler_pgm: falha ao ler max_val\n"); fclose(f); return NULL;
+	}
 
 	//aloca imagem
 	Imagem *img = (Imagem *)malloc(sizeof(Imagem)); 
+	if (!img) { fprintf(stderr, "[ERRO] ler_pgm: sem memoria\n"); fclose(f); return NULL; }
 	img->largura = largura; 
 	img->altura = altura; 	
 
 	//aloca matriz pixels[altura][largura] 
 	img->pixels = (int **)malloc(altura * sizeof(int *)); 
+	if (!img->pixels) { free(img); fclose(f); fprintf(stderr, "[ERRO] ler_pgm: sem memoria\n"); return NULL; }
 	for (int y=0; y < altura; y++) {
 		img->pixels[y] = (int *)malloc(largura * sizeof(int)); 
-		for (int x=0; x < largura; x++)
-			fscanf(f, "%d", &img->pixels[y][x]);
+		if (!img->pixels[y]) {
+			// libera linhas já alocadas
+			for (int k = 0; k < y; k++) free(img->pixels[k]);
+			free(img->pixels); free(img); fclose(f);
+			fprintf(stderr, "[ERRO] ler_pgm: sem memoria\n"); return NULL;
+		}
+		for (int x=0; x < largura; x++) {
+			if (fscanf(f, "%d", &img->pixels[y][x]) != 1) {
+				// erro de leitura: libera tudo
+				for (int k = 0; k <= y; k++) free(img->pixels[k]);
+				free(img->pixels); free(img); fclose(f);
+				fprintf(stderr, "[ERRO] ler_pgm: dados de pixel incompletos\n"); return NULL;
+			}
+		}
 	}
 
 	fclose(f);

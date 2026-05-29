@@ -1,6 +1,7 @@
 #ifndef HEAP_H
 #define HEAP_H
 
+#include <stdlib.h>
 #include "min_heap.h"
 
 typedef HeapItem ItemHeap;

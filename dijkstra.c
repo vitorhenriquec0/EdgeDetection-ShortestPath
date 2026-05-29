@@ -6,10 +6,7 @@
 
 #define SEM_PRED (-1)
 
-typedef struct {
-    int *caminho;   /* IDs dos pixels do contorno, em ordem */
-    int  tamanho;   /* quantos pixels há no caminho         */
-} Caminho;
+/* Usa o tipo Caminho declarado em grafo.h */
 
 
 static Caminho reconstruir_caminho(int *pred, int origem, int destino)
