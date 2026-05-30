@@ -53,6 +53,7 @@ void liberar_imagem (Imagem *img);
 
 //grafo.c 
 Grafo *criar_grafo (const Imagem *img); 
+Grafo *criar_grafo_contorno(const Imagem *img, const int *ordem_contorno, int tamanho_contorno, int origem, int destino);
 void liberar_grafo (Grafo *g);
 
 //output.c

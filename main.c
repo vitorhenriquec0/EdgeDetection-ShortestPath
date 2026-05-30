@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
 #include "grafo.h"
 #include "dijkstra.h"
@@ -10,23 +11,6 @@ typedef struct {
     int toca_borda;
     int objeto_claro;
 } Segmento;
-
-static int adicionar_pixel(Caminho *c, int id)
-{
-    int nova_capacidade = (c->tamanho == 0) ? 256 : c->tamanho * 2;
-    if (c->tamanho + 1 > nova_capacidade) {
-        nova_capacidade = c->tamanho + 1;
-    }
-
-    int *novo = realloc(c->caminho, (size_t)nova_capacidade * sizeof(int));
-    if (!novo) {
-        return 0;
-    }
-
-    c->caminho = novo;
-    c->caminho[c->tamanho++] = id;
-    return 1;
-}
 
 static void liberar_segmento(Segmento *s)
 {
@@ -213,11 +197,105 @@ static Segmento extrair_melhor_segmento(const Imagem *img, int threshold, int ob
     return melhor;
 }
 
+static unsigned char *construir_mascara_contorno(const Imagem *img, const Segmento *objeto, int threshold)
+{
+    int total = img->largura * img->altura;
+    unsigned char *mascara = calloc((size_t)total, sizeof(unsigned char));
+    if (!mascara) {
+        return NULL;
+    }
+
+    for (int i = 0; i < objeto->tamanho; i++) {
+        int id = objeto->pixels[i];
+        int x = id % img->largura;
+        int y = id / img->largura;
+        if (borda_de_pixel(img, x, y, threshold, objeto->objeto_claro)) {
+            mascara[id] = 1;
+        }
+    }
+
+    return mascara;
+}
+
+static double centroide_x = 0.0;
+static double centroide_y = 0.0;
+static int ordem_largura = 0;
+
+static int contar_marcados(const unsigned char *mascara, int total);
+
+static int comparar_angulo_contorno(const void *a, const void *b)
+{
+    int id_a = *(const int *)a;
+    int id_b = *(const int *)b;
+    double ax = (double)(id_a % ordem_largura) - centroide_x;
+    double ay = (double)(id_a / ordem_largura) - centroide_y;
+    double bx = (double)(id_b % ordem_largura) - centroide_x;
+    double by = (double)(id_b / ordem_largura) - centroide_y;
+
+    double ang_a = atan2(ay, ax);
+    double ang_b = atan2(by, bx);
+    if (ang_a < ang_b) return -1;
+    if (ang_a > ang_b) return 1;
+
+    double dist_a = ax * ax + ay * ay;
+    double dist_b = bx * bx + by * by;
+    if (dist_a < dist_b) return -1;
+    if (dist_a > dist_b) return 1;
+
+    return (id_a < id_b) ? -1 : (id_a > id_b);
+}
+
+static int construir_ordem_contorno(const unsigned char *mascara, int largura, int altura, int **ordem_out, int *tamanho_out)
+{
+    int total = largura * altura;
+    int contagem = contar_marcados(mascara, total);
+    if (contagem < 2) {
+        return 0;
+    }
+
+    int *ordem = malloc((size_t)contagem * sizeof(int));
+    if (!ordem) {
+        return 0;
+    }
+
+    double soma_x = 0.0;
+    double soma_y = 0.0;
+    int indice = 0;
+    for (int i = 0; i < total; i++) {
+        if (!mascara[i]) {
+            continue;
+        }
+        ordem[indice++] = i;
+        soma_x += (double)(i % largura);
+        soma_y += (double)(i / largura);
+    }
+
+    centroide_x = soma_x / contagem;
+    centroide_y = soma_y / contagem;
+    ordem_largura = largura;
+    qsort(ordem, (size_t)contagem, sizeof(int), comparar_angulo_contorno);
+
+    *ordem_out = ordem;
+    *tamanho_out = contagem;
+    (void)altura;
+    return 1;
+}
+
+static int contar_marcados(const unsigned char *mascara, int total)
+{
+    int contagem = 0;
+    for (int i = 0; i < total; i++) {
+        if (mascara[i]) {
+            contagem++;
+        }
+    }
+    return contagem;
+}
+
 static Caminho rastrear_contorno(const Imagem *img)
 {
     Caminho c = { NULL, 0 };
     int threshold = otsu_threshold(img);
-    int total = img->largura * img->altura;
 
     Segmento escuro = extrair_melhor_segmento(img, threshold, 0);
     Segmento claro = extrair_melhor_segmento(img, threshold, 1);
@@ -238,25 +316,48 @@ static Caminho rastrear_contorno(const Imagem *img)
         return c;
     }
 
-    for (int i = 0; i < escolhido->tamanho; i++) {
-        int id = escolhido->pixels[i];
-        int x = id % img->largura;
-        int y = id / img->largura;
-        if (borda_de_pixel(img, x, y, threshold, escolhido->objeto_claro)) {
-            if (!adicionar_pixel(&c, id)) {
-                fprintf(stderr, "[ERRO] Sem memoria ao montar o contorno.\n");
-                liberar_caminho(&c);
-                break;
-            }
-        }
+    unsigned char *mascara_contorno = construir_mascara_contorno(img, escolhido, threshold);
+    if (!mascara_contorno) {
+        fprintf(stderr, "[ERRO] Sem memoria para a mascara do contorno.\n");
+        liberar_segmento(&escuro);
+        liberar_segmento(&claro);
+        return c;
     }
 
-    printf("[OK] threshold automatico: %d | objeto %s\n", threshold, escolhido->objeto_claro ? "claro" : "escuro");
-    printf("[OK] componente selecionado: %d pixels\n", escolhido->tamanho);
+    int *ordem_contorno = NULL;
+    int tamanho_contorno = 0;
+    if (!construir_ordem_contorno(mascara_contorno, img->largura, img->altura, &ordem_contorno, &tamanho_contorno)) {
+        fprintf(stderr, "[ERRO] Nao foi possivel ordenar o contorno.\n");
+        free(mascara_contorno);
+        liberar_segmento(&escuro);
+        liberar_segmento(&claro);
+        return c;
+    }
 
+    int origem = ordem_contorno[0];
+    int destino = ordem_contorno[1];
+
+    Grafo *g = criar_grafo_contorno(img, ordem_contorno, tamanho_contorno, origem, destino);
+    if (!g) {
+        fprintf(stderr, "[ERRO] Falha ao criar grafo do contorno.\n");
+        free(ordem_contorno);
+        free(mascara_contorno);
+        liberar_segmento(&escuro);
+        liberar_segmento(&claro);
+        return c;
+    }
+
+    c = dijkstra(g, origem, destino);
+
+    printf("[OK] threshold automatico: %d | objeto %s\n", threshold, escolhido->objeto_claro ? "claro" : "escuro");
+    printf("[OK] pixels de contorno: %d | origem: %d | destino: %d\n", tamanho_contorno, origem, destino);
+    printf("[OK] caminho dijkstra: %d pixels\n", c.tamanho);
+
+    liberar_grafo(g);
+    free(ordem_contorno);
+    free(mascara_contorno);
     liberar_segmento(&escuro);
     liberar_segmento(&claro);
-    (void)total;
     return c;
 }
 
