@@ -105,11 +105,16 @@ void salvar_caminho_ppm(const char *arquivo,
 
 	int N = img->largura * img->altura; 
 
-	//mapa booleano: 1 = pixel faz parte do contorno 
+	// mapa booleano: 1 = pixel faz parte do contorno
 	char *marca = (char *)calloc(N, sizeof(char));
 	if (!marca) { fclose(f); fprintf(stderr, "[ERRO] salvar_caminho_ppm: sem memoria\n"); return; }
-	for (int i = 0; i < c->tamanho; i++) {
-		marca[c->caminho[i]] = 1;
+	if (c && c->caminho) {
+		for (int i = 0; i < c->tamanho; i++) {
+			int idx = c->caminho[i];
+			if (idx >= 0 && idx < N) {
+				marca[idx] = 1;
+			}
+		}
 	}
 
 	// cabeçalho PPM

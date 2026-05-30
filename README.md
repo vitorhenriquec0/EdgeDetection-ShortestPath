@@ -1,19 +1,19 @@
-# Detecao de Bordas em Exames por Menor Caminho
+# Detecao de Bordas por Contorno Fechado
 
 ## Visao geral
 
-Este projeto propõe uma versao simplificada de segmentacao de contornos em imagens medicas usando grafos e o algoritmo de Dijkstra. A ideia e tratar a imagem como um grafo, onde cada pixel representa um no, e usar pesos nas arestas para favorecer o caminho que se ajusta melhor ao contorno de estruturas como ossos, pulmoes ou tumores.
+Este projeto extrai o contorno fechado de um objeto de alto contraste em uma imagem PGM. A imagem e tratada como uma matriz de pixels; em seguida, o programa calcula um limiar automatico, testa o objeto como escuro e como claro, seleciona o maior componente conectado que nao encosta na borda da imagem e coleta os seus pixels de borda.
 
-Em vez de depender de algoritmos mais complexos de fluxo maximo, a solucao foca em uma implementacao direta em C, com estruturas de dados classicas da disciplina de Estruturas de Dados.
+O resultado e um contorno completo destacado na imagem final, adequado para casos como um circulo preenchido de preto ou branco sobre fundo uniforme.
 
 ## Como a abordagem funciona
 
-1. A imagem e o grafo: cada pixel vira um no do grafo.
-2. As arestas conectam cada pixel aos seus 8 vizinhos.
-3. O peso da aresta depende da diferenca de intensidade entre pixels vizinhos.
-4. Quanto maior a diferenca entre dois pixels, menor o peso, o que faz o algoritmo preferir caminhos sobre bordas e contornos.
-5. O usuario escolhe um ponto inicial e um ponto final, e o Dijkstra encontra o caminho minimo entre eles.
-6. Esse caminho e desenhado na imagem final para evidenciar o contorno detectado.
+1. A imagem PGM e carregada em memoria como uma matriz de intensidades.
+2. O programa calcula um limiar automatico pelo metodo de Otsu.
+3. O algoritmo testa duas hipoteses: objeto escuro sobre fundo claro e objeto claro sobre fundo escuro.
+4. Em cada hipotese, ele busca o maior componente conectado que nao encosta na borda da imagem.
+5. Entre as duas hipoteses, escolhe a melhor componente e marca apenas os pixels de borda desse objeto.
+6. Esses pixels sao desenhados na imagem final e tambem exportados em ASCII.
 
 Uma formula simples para os pesos pode ser:
 
@@ -39,20 +39,19 @@ Para manter o trabalho organizado, o projeto pode ser dividido em cinco partes i
 - Conecta cada pixel aos seus 8 vizinhos.
 - Calcula os pesos das arestas com base na diferenca de intensidade.
 
-### 3. Dijkstra
+### 3. Extracao de contorno
 
-- Implementa o algoritmo de Dijkstra em C puro.
-- Recebe o ponto inicial e o ponto final.
-- Retorna o caminho minimo como uma sequencia de coordenadas.
+- Calcula um limiar automatico para separar primeiro plano e fundo.
+- Testa o objeto como escuro e como claro.
+- Seleciona o maior componente interno e extrai os seus pixels de borda.
 
-### 4. Fila de prioridade
+### 4. Visualizacao e resultados
 
-- Implementa um Min-Heap do zero.
-- Garante que o Dijkstra rode de forma eficiente.
-- Inclui operacoes como insercao, remocao do menor elemento e diminuicao de chave.
-
-### 5. Interface e resultados
-
-- Gera uma nova imagem com o caminho encontrado destacado.
+- Gera uma nova imagem com o contorno destacado.
 - Pinta os pixels do contorno em vermelho para facilitar a apresentacao.
-- Produz o resultado visual final para comparacao com a imagem original.
+- Produz tambem uma pre-visualizacao ASCII do resultado.
+
+## Observacoes
+
+- Funciona melhor para imagens com fundo uniforme e um objeto principal bem definido.
+- Se o objeto encostar na borda da imagem ou houver muito ruido, a deteccao pode precisar de ajuste manual.
