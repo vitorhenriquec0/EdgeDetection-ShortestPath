@@ -1,7 +1,6 @@
 #ifndef MIN_HEAP_H
 #define MIN_HEAP_H
 
-#define MAX_HEAP 270000
 
 typedef struct {
     int   no;
@@ -9,9 +8,10 @@ typedef struct {
 } HeapItem;
 
 typedef struct {
-    HeapItem data[MAX_HEAP];
-    int      pos[MAX_HEAP];
+    HeapItem *data;
+    int      *pos; 
     int      tamanho;  
+    int      capacidade;
 } MinHeap;
 
 typedef HeapItem ItemHeap;

@@ -51,30 +51,24 @@ Imagem *ler_pgm(const char *arquivo) {
 	img->largura = largura; 
 	img->altura = altura; 	
 
-	//aloca matriz pixels[altura][largura] 
-	img->pixels = (int **)malloc(altura * sizeof(int *)); 
+	// Aloca TODOS os pixels num único bloco contíguo (1D)
+	img->pixels = (int *)malloc(altura * largura * sizeof(int)); 
 	if (!img->pixels) { free(img); fclose(f); fprintf(stderr, "[ERRO] ler_pgm: sem memoria\n"); return NULL; }
-	for (int y=0; y < altura; y++) {
-		img->pixels[y] = (int *)malloc(largura * sizeof(int)); 
-		if (!img->pixels[y]) {
-			// libera linhas já alocadas
-			for (int k = 0; k < y; k++) free(img->pixels[k]);
-			free(img->pixels); free(img); fclose(f);
-			fprintf(stderr, "[ERRO] ler_pgm: sem memoria\n"); return NULL;
-		}
-		for (int x=0; x < largura; x++) {
-			if (fscanf(f, "%d", &img->pixels[y][x]) != 1) {
-				// erro de leitura: libera tudo
-				for (int k = 0; k <= y; k++) free(img->pixels[k]);
+	
+	// Leitura dos dados mapeados linearmente
+	for (int y = 0; y < altura; y++) {
+		for (int x = 0; x < largura; x++) {
+			// Cálculo do índice linear: y * largura + x
+			if (fscanf(f, "%d", &img->pixels[y * largura + x]) != 1) {
 				free(img->pixels); free(img); fclose(f);
-				fprintf(stderr, "[ERRO] ler_pgm: dados de pixel incompletos\n"); return NULL;
+				fprintf(stderr, "[ERRO] dados de pixel incompletos\n"); return NULL;
 			}
 		}
 	}
 
 	fclose(f);
 	printf("[OK] ler_pgm: '%s' %dx%d pixels\n", arquivo, largura, altura);
-	return img; 
+	return img;
 }
 
 /* ─── salvar_pgm ────────────────────────────────────────────────
@@ -83,12 +77,14 @@ Imagem *ler_pgm(const char *arquivo) {
 void salvar_pgm(const char *arquivo, const Imagem *img) {
 	FILE *f = fopen(arquivo, "w");
 	if (!f) {
-		fprintf(stderr, "[ERRO] salvar_pgm\n"); return; 
+		fprintf(stderr, "[ERRO] salvar_pgm: não abriu '%s'\n", arquivo);
+		return;
 	}
+
 	fprintf(f, "P2\n%d %d\n255\n", img->largura, img->altura);
-	for (int y=0; y < img->altura; y++) {
-		for (int x=0; x < img->largura; x++)
-			fprintf(f, "%d", img->pixels[y][x]);
+	for (int y = 0; y < img->altura; y++) {
+		for (int x = 0; x < img->largura; x++)
+			fprintf(f, "%d ", img->pixels[y * img->largura + x]); // Acesso linear
 		fprintf(f, "\n");
 	}
 	fclose(f);
@@ -97,8 +93,6 @@ void salvar_pgm(const char *arquivo, const Imagem *img) {
 //liberar (memória da) imagem 
 void liberar_imagem(Imagem *img) {
 	if (!img) return; 
-	for (int y=0; y < img->altura; y++) 
-		free(img->pixels[y]);
-	free(img->pixels);
+	free(img->pixels); // Libera o bloco único de pixels
 	free(img);
 }

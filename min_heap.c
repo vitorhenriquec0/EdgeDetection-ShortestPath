@@ -125,6 +125,19 @@ int heap_contem(const MinHeap *h, int no) {
 MinHeap *criar_heap(int total_nos) {
     MinHeap *h = (MinHeap *)malloc(sizeof(MinHeap));
     if (!h) return NULL;
+    
+    // Aloca a memória exata para a imagem atual
+    h->data = (HeapItem *)malloc(total_nos * sizeof(HeapItem));
+    h->pos = (int *)malloc(total_nos * sizeof(int));
+    
+    if (!h->data || !h->pos) {
+        free(h->data);
+        free(h->pos);
+        free(h);
+        return NULL;
+    }
+    
+    h->capacidade = total_nos;
     heap_init(h, total_nos); 
     return h;
 }
@@ -142,5 +155,9 @@ ItemHeap remover_min(MinHeap *h) {
 }
 
 void liberar_heap(MinHeap *h) {
-    free(h);
+    if (h) {
+        free(h->data); // Libera o array de itens
+        free(h->pos);  // Libera o mapa de posições
+        free(h);       // Libera a estrutura
+    }
 }

@@ -26,11 +26,10 @@ typedef struct {
  * IMAGEM — matriz de pixels carregada do .pgm
  * ═══════════════════════════════════════════════════════ */
 typedef struct {
-	int **pixels; //pixels[y][x] = valor 0..255
+	int *pixels;
 	int largura; 
 	int altura; 
-} Imagem; 
-
+} Imagem;
 
 /* ═══════════════════════════════════════════════════════
  * CAMINHO — resultado do Dijkstra (usado por output.c)
@@ -58,5 +57,7 @@ void liberar_grafo (Grafo *g);
 
 //output.c
 void salvar_caminho_ppm(const char *arquivo, const Imagem *img, const Caminho *c); 
+void salvar_caminho_ascii(const char *arquivo, const Imagem *img, const Caminho *c);
+void mostrar_caminho_ascii(const Imagem *img, const Caminho *c);
 
 #endif

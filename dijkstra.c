@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <float.h>
 #include "grafo.h" 
-#include "heap.h"  
+#include "min_heap.h"  
 
 #define SEM_PRED (-1)
 
