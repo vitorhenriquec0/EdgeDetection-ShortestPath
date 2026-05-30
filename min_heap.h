@@ -1,17 +1,16 @@
 #ifndef MIN_HEAP_H
 #define MIN_HEAP_H
 
-
 typedef struct {
-    int   no;
+    int no;
     double dist;
 } HeapItem;
 
 typedef struct {
     HeapItem *data;
-    int      *pos; 
-    int      tamanho;  
-    int      capacidade;
+    int *pos;
+    int tamanho;
+    int capacidade;
 } MinHeap;
 
 typedef HeapItem ItemHeap;
