@@ -38,12 +38,6 @@ static void adicionar_aresta(Grafo *g, int origem, int destino, double peso)
 	g->lista_adj[origem] = a;
 }
 
-static void adicionar_aresta_bidirecional(Grafo *g, int u, int v, double peso)
-{
-	adicionar_aresta(g, u, v, peso);
-	adicionar_aresta(g, v, u, peso);
-}
-
 /* ─── criar_grafo ───────────────────────────────────────────────
  * Transforma a Imagem em grafo de lista de adjacência.
  * Cada pixel conecta-se aos 8 vizinhos (conectividade 8).
@@ -86,34 +80,6 @@ Grafo *criar_grafo(const Imagem *img)
 	}
 
 	printf("[OK] criar_grafo: %d nos, ~%d arestas\n", N, N * 8);
-	return g;
-}
-
-/* ─── criar_grafo_contorno ──────────────────────────────────────
- * Cria um ciclo ordenado com os pixels do contorno.
- * A aresta entre origem e destino é bloqueada para forçar o Dijkstra
- * a percorrer o restante do ciclo.
- * ─────────────────────────────────────────────────────────────── */
-Grafo *criar_grafo_contorno(const Imagem *img, const int *ordem_contorno, int tamanho_contorno, int origem, int destino)
-{
-	int N = img->largura * img->altura;
-
-	Grafo *g = (Grafo *)malloc(sizeof(Grafo));
-	g->largura = img->largura;
-	g->altura = img->altura;
-	g->num_nos = N;
-	g->lista_adj = (Aresta **)calloc(N, sizeof(Aresta *));
-
-	for (int i = 0; i < tamanho_contorno; i++)
-	{
-		int u = ordem_contorno[i];
-		int v = ordem_contorno[(i + 1) % tamanho_contorno];
-		double peso = ((u == origem && v == destino) || (u == destino && v == origem)) ? 1e12 : 1.0;
-
-		adicionar_aresta_bidirecional(g, u, v, peso);
-	}
-
-	printf("[OK] criar_grafo_contorno: %d nos, %d pixels no contorno\n", N, tamanho_contorno);
 	return g;
 }
 

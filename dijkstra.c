@@ -87,6 +87,12 @@ Caminho dijkstra(Grafo *grafo, int origem, int destino)
 
     liberar_heap(heap);
 
+    if (dist[destino] == DBL_MAX) {
+        free(dist);
+        free(pred);
+        return vazio;
+    }
+
     Caminho resultado = reconstruir_caminho(pred, origem, destino);
 
     free(dist);

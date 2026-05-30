@@ -4,7 +4,7 @@
 
 typedef struct {
     int   no;
-    float dist;
+    double dist;
 } HeapItem;
 
 typedef struct {
@@ -21,11 +21,11 @@ typedef HeapItem ItemHeap;
 
 void heap_init(MinHeap *h, int total_nos);
 
-void heap_inserir(MinHeap *h, int no, float dist);
+void heap_inserir(MinHeap *h, int no, double dist);
 
 HeapItem heap_remover_min(MinHeap *h);
 
-void heap_diminuir_chave(MinHeap *h, int no, float nova_dist);
+void heap_diminuir_chave(MinHeap *h, int no, double nova_dist);
 
 int heap_vazia(const MinHeap *h);
 
