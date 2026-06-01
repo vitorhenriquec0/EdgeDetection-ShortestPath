@@ -6,14 +6,13 @@
 
 #define SEM_PRED (-1)
 
-/* Usa o tipo Caminho declarado em grafo.h */
-
+// Usa o tipo Caminho declarado em grafo.h 
 
 static Caminho reconstruir_caminho(int *pred, int origem, int destino)
 {
     Caminho c = { NULL, 0 };
 
-    /* Conta os nós */
+    // Conta os nós
     int tamanho = 0;
     int atual = destino;
     while (atual != SEM_PRED) {
@@ -25,7 +24,7 @@ static Caminho reconstruir_caminho(int *pred, int origem, int destino)
     c.caminho = malloc(tamanho * sizeof(int));
     if (!c.caminho) return c;
 
-    /* Preenche de trás para frente */
+    // Preenche de trás para frente
     atual = destino;
     for (int i = tamanho - 1; i >= 0; i--) {
         c.caminho[i] = atual;
@@ -36,12 +35,8 @@ static Caminho reconstruir_caminho(int *pred, int origem, int destino)
     return c;
 }
 
-
-/* ------------------------------------------------------------------
- * dijkstra
- * Função principal. Retorna o caminho mínimo entre origem e destino
- * no grafo de pixels, que corresponde ao contorno detectado.
- * ------------------------------------------------------------------ */
+// Função principal
+// Retorna o caminho mínimo entre origem e destino no grafo de pixels, que corresponde ao contorno detectado
 Caminho dijkstra(Grafo *grafo, int origem, int destino)
 {
     int V = grafo->num_nos;
@@ -51,7 +46,7 @@ Caminho dijkstra(Grafo *grafo, int origem, int destino)
     int    *pred = malloc(V * sizeof(int));
     if (!dist || !pred) { free(dist); free(pred); return vazio; }
 
-    /* Inicialização */
+    // Inicialização
     for (int i = 0; i < V; i++) {
         dist[i] = DBL_MAX;
         pred[i] = SEM_PRED;
@@ -61,18 +56,18 @@ Caminho dijkstra(Grafo *grafo, int origem, int destino)
     MinHeap *heap = criar_heap(V);
     inserir_heap(heap, origem, 0.0);
 
-    /* Loop principal */
+    // Loop principal
     while (!heap_vazia(heap)) {
         ItemHeap item = remover_min(heap);
         int u = item.id_no;
 
-        /* Parada antecipada: chegou ao destino */
+        // Parada antecipada: chegou ao destino
         if (u == destino) break;
 
-        /* Descarta entradas desatualizadas */
+        // Descarta entradas desatualizadas
         if (item.prioridade > dist[u]) continue;
 
-        /* Relaxamento dos vizinhos */
+        // Relaxamento dos vizinhos
         Aresta *a = grafo->lista_adj[u];
         while (a != NULL) {
             double nova = dist[u] + a->peso;
@@ -87,12 +82,6 @@ Caminho dijkstra(Grafo *grafo, int origem, int destino)
 
     liberar_heap(heap);
 
-    if (dist[destino] == DBL_MAX) {
-        free(dist);
-        free(pred);
-        return vazio;
-    }
-
     Caminho resultado = reconstruir_caminho(pred, origem, destino);
 
     free(dist);
@@ -100,11 +89,7 @@ Caminho dijkstra(Grafo *grafo, int origem, int destino)
     return resultado;
 }
 
-
-/* ------------------------------------------------------------------
- * liberar_caminho
- * Chame após o Integrante 1 terminar de gerar a imagem de saída.
- * ------------------------------------------------------------------ */
+// Chame após o Integrante 1 terminar de gerar a imagem de saída
 void liberar_caminho(Caminho *c)
 {
     free(c->caminho);
@@ -112,12 +97,8 @@ void liberar_caminho(Caminho *c)
     c->tamanho = 0;
 }
 
-
-/* ------------------------------------------------------------------
- * imprimir_caminho
- * Exibe as coordenadas (linha, col) de cada pixel do caminho.
- * Útil para testar antes de ter a saída visual pronta.
- * ------------------------------------------------------------------ */
+// Exibe as coordenadas (linha, col) de cada pixel do caminho
+// Útil para testar antes de ter a saída visual pronta
 void imprimir_caminho(Caminho *c, int largura)
 {
     printf("Caminho encontrado: %d pixels\n", c->tamanho);

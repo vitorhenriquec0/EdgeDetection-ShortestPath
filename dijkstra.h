@@ -3,7 +3,6 @@
 
 #include "grafo.h"
 
-/* Protótipos — usa o tipo `Caminho` declarado em grafo.h */
 Caminho dijkstra(Grafo *grafo, int origem, int destino);
 void    liberar_caminho(Caminho *c);
 void    imprimir_caminho(Caminho *c, int largura);
