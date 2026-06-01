@@ -101,15 +101,36 @@ int main(int argc, char **argv)
     // 3. Constrói o GRAFO DA IMAGEM INTEIRA (Torna as EDs Essenciais)
     Grafo *g = criar_grafo(img);
 
-    // 4. Bloqueio Topológico: A Cortina de Ferro
-    // Descemos o muro desde o topo da tela até a penúltima linha (H - 2)
-    // Isso força o algoritmo a contornar TUDO e atravessar apenas pelo chão.
-    for (int y = 0; y < H - 1; y++)
+    // 4. Bloqueio Topológico: O Muro Adaptativo
+    // O pulmão começa em topo_y + 1 (pois topo_y é a última linha do fundo)
+    int ref_y = topo_y + 1;
+    if (ref_y >= H) ref_y = topo_y;
+    
+    // Descobre se o objeto é mais claro que o fundo
+    int objeto_claro = (img->pixels[ref_y * W + topo_x] > threshold);
+
+    // Escaneia a imagem de cima para baixo até achar o fim do pulmão
+    int fundo_y = ref_y;
+    while (fundo_y < H - 1)
+    {
+        int cor_atual = img->pixels[fundo_y * W + topo_x];
+        int no_objeto = objeto_claro ? (cor_atual > threshold) : (cor_atual <= threshold);
+        
+        // Se a cor virar a cor do fundo, significa que atravessamos o pulmão e saímos por baixo!
+        if (!no_objeto) break; 
+        fundo_y++;
+    }
+
+    // O muro vai do topo da tela até 2 pixels ANTES de sair do pulmão.
+    // Isso deixa a borda inferior totalmente livre para o Dijkstra atravessar.
+    int limite_muro = fundo_y - 2;
+    if (limite_muro < topo_y + 1) limite_muro = topo_y + 1;
+
+    for (int y = 0; y <= limite_muro; y++)
     {
         int id_esq = y * W + (topo_x - 1);
         int id_dir = y * W + topo_x;
 
-        // Bloqueia qualquer travessia da esquerda pra direita
         Aresta *a = g->lista_adj[id_esq];
         while (a)
         {
@@ -118,7 +139,6 @@ int main(int argc, char **argv)
             a = a->prox;
         }
 
-        // Bloqueia qualquer travessia da direita pra esquerda
         a = g->lista_adj[id_dir];
         while (a)
         {
