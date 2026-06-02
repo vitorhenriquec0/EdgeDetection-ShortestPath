@@ -1,9 +1,8 @@
 #include "min_heap.h"
 #include <stdlib.h>
 
-/* -------------------------------------------------- */
-/* Troca dois elementos da heap                       */
-/* -------------------------------------------------- */
+
+// Troca dois elementos da heap
 static void swap(MinHeap *h, int a, int b)
 {
     HeapItem tmp = h->data[a];
@@ -14,9 +13,7 @@ static void swap(MinHeap *h, int a, int b)
     h->pos[h->data[b].no] = b;
 }
 
-/* -------------------------------------------------- */
-/* Heapify-up                                         */
-/* -------------------------------------------------- */
+// Heapify-up
 static void sobe(MinHeap *h, int i)
 {
     while (i > 0)
@@ -31,9 +28,7 @@ static void sobe(MinHeap *h, int i)
     }
 }
 
-/* -------------------------------------------------- */
-/* Heapify-down                                       */
-/* -------------------------------------------------- */
+// Heapify-down
 static void desce(MinHeap *h, int i)
 {
     while (1)
@@ -42,12 +37,10 @@ static void desce(MinHeap *h, int i)
         int esq = 2 * i + 1;
         int dir = 2 * i + 2;
 
-        if (esq < h->tamanho &&
-            h->data[esq].dist < h->data[menor].dist)
+        if (esq < h->tamanho && h->data[esq].dist < h->data[menor].dist)
             menor = esq;
 
-        if (dir < h->tamanho &&
-            h->data[dir].dist < h->data[menor].dist)
+        if (dir < h->tamanho && h->data[dir].dist < h->data[menor].dist)
             menor = dir;
 
         if (menor == i)
@@ -58,9 +51,7 @@ static void desce(MinHeap *h, int i)
     }
 }
 
-/* -------------------------------------------------- */
-/* Inicialização                                      */
-/* -------------------------------------------------- */
+// Inicialização
 void heap_init(MinHeap *h, int total_nos)
 {
     h->tamanho = 0;
@@ -69,9 +60,7 @@ void heap_init(MinHeap *h, int total_nos)
         h->pos[i] = -1;
 }
 
-/* -------------------------------------------------- */
-/* Inserção                                           */
-/* -------------------------------------------------- */
+// Inserção
 void heap_inserir(MinHeap *h, int no, double dist)
 {
     int i = h->tamanho++;
@@ -83,9 +72,7 @@ void heap_inserir(MinHeap *h, int no, double dist)
     sobe(h, i);
 }
 
-/* -------------------------------------------------- */
-/* Remoção do mínimo                                  */
-/* -------------------------------------------------- */
+// Remoção do mínimo
 HeapItem heap_remover_min(MinHeap *h)
 {
     HeapItem minimo = h->data[0];
@@ -105,9 +92,7 @@ HeapItem heap_remover_min(MinHeap *h)
     return minimo;
 }
 
-/* -------------------------------------------------- */
-/* Decrease-key                                       */
-/* -------------------------------------------------- */
+// Decrease-key
 void heap_diminuir_chave(MinHeap *h, int no, double nova_dist)
 {
     int i = h->pos[no];
@@ -123,9 +108,7 @@ void heap_diminuir_chave(MinHeap *h, int no, double nova_dist)
     sobe(h, i);
 }
 
-/* -------------------------------------------------- */
-/* Utilidades                                         */
-/* -------------------------------------------------- */
+// Verificações
 int heap_vazia(const MinHeap *h)
 {
     return h->tamanho == 0;
@@ -136,9 +119,7 @@ int heap_contem(const MinHeap *h, int no)
     return h->pos[no] != -1;
 }
 
-/* -------------------------------------------------- */
-/* Criação                                            */
-/* -------------------------------------------------- */
+// Criação
 MinHeap *criar_heap(int total_nos)
 {
     MinHeap *h = malloc(sizeof(MinHeap));
@@ -164,9 +145,7 @@ MinHeap *criar_heap(int total_nos)
     return h;
 }
 
-/* -------------------------------------------------- */
-/* Interface usada pelo Dijkstra                      */
-/* -------------------------------------------------- */
+// Inserção ou diminuição de chave
 void inserir_heap(MinHeap *h, int no, double dist)
 {
     if (heap_contem(h, no))
@@ -180,9 +159,7 @@ ItemHeap remover_min(MinHeap *h)
     return heap_remover_min(h);
 }
 
-/* -------------------------------------------------- */
-/* Liberação                                          */
-/* -------------------------------------------------- */
+// Liberação
 void liberar_heap(MinHeap *h)
 {
     if (!h)

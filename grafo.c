@@ -3,20 +3,17 @@
 #include <math.h>
 #include "grafo.h"
 
-/* ─── calcular_peso ─────────────────────────────────────────────
- * Fórmula: 1 / (|I1 - I2| + 1)
- * Borda (grande diferença) → peso baixo → Dijkstra prefere
- * Interior homogêneo       → peso alto  → Dijkstra evita
- * ─────────────────────────────────────────────────────────────── */
-static double calcular_peso_gradiente(const Imagem *img, int nx, int ny) {
+// Peso = 1 / (|I1 - I2| + 1)
+// Borda → peso baixo → Dijkstra prefere
+// Interior homogêneo → peso alto  → Dijkstra evita
+static double calcular_peso_gradiente(const Imagem *img, int nx, int ny) 
+{
 	int W = img->largura;
 	int H = img->altura;
 	
-	// Pega o valor central
 	int v_centro = img->pixels[ny * W + nx];
 	
 	// Se o vizinho estiver fora da tela, finge que ele tem a mesma cor do centro
-	// Isso mata o "gradiente fantasma" nas bordas da imagem
 	int v_esq   = (nx > 0)     ? img->pixels[ny * W + (nx - 1)] : v_centro;
 	int v_dir   = (nx < W - 1) ? img->pixels[ny * W + (nx + 1)] : v_centro;
 	int v_cima  = (ny > 0)     ? img->pixels[(ny - 1) * W + nx] : v_centro;
@@ -29,6 +26,7 @@ static double calcular_peso_gradiente(const Imagem *img, int nx, int ny) {
 	return 1000000.0 / ((mag * mag) + 1.0);
 }
 
+// Adiciona aresta direcionada (origem -> destino) com peso dado
 static void adicionar_aresta(Grafo *g, int origem, int destino, double peso)
 {
 	Aresta *a = (Aresta *)malloc(sizeof(Aresta));
@@ -38,10 +36,8 @@ static void adicionar_aresta(Grafo *g, int origem, int destino, double peso)
 	g->lista_adj[origem] = a;
 }
 
-/* ─── criar_grafo ───────────────────────────────────────────────
- * Transforma a Imagem em grafo de lista de adjacência.
- * Cada pixel conecta-se aos 8 vizinhos (conectividade 8).
- * ─────────────────────────────────────────────────────────────── */
+// Transforma a Imagem em grafo de lista de adjacência
+// Cada pixel conecta-se aos 8 vizinhos (conectividade 8)
 Grafo *criar_grafo(const Imagem *img)
 {
 	int W = img->largura;
@@ -79,13 +75,10 @@ Grafo *criar_grafo(const Imagem *img)
 		}
 	}
 
-	printf("[OK] criar_grafo: %d nos, ~%d arestas\n", N, N * 8);
 	return g;
 }
 
-/* ─── liberar_grafo ─────────────────────────────────────────────
- * Libera lista de adjacência e o próprio Grafo.
- * ─────────────────────────────────────────────────────────────── */
+// Libera lista de adjacência e o próprio Grafo.
 void liberar_grafo(Grafo *g)
 {
 	if (!g)

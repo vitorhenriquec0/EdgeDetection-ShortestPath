@@ -5,9 +5,7 @@
 #include "grafo.h"
 #include "dijkstra.h"
 
-/* * A sua implementação perfeita do limiar de Otsu!
- * Serve para descobrir dinamicamente onde o fundo acaba e o objeto começa.
- */
+// Função para calcular o limiar de Otsu para segmentação automática da imagem
 static int otsu_threshold(const Imagem *img)
 {
     int hist[256] = {0};
@@ -65,11 +63,10 @@ int main(int argc, char **argv)
     int W = img->largura;
     int H = img->altura;
 
-    // 1. Usamos a magia do Otsu para descobrir o limiar da imagem (sem chutar valores)
+    // 1. Usa Otsu para descobrir o limiar da imagem
     int threshold = otsu_threshold(img);
-    printf("[OK] Threshold de Otsu calculado: %d\n", threshold);
 
-    // 2. Acha o TOPO geométrico exato procurando a transição de Otsu
+    // 2. Acha o topo geométrico exato procurando a transição de Otsu
     int topo_y = -1, topo_x = -1;
     for (int y = 1; y < H - 1; y++)
     {
@@ -78,7 +75,7 @@ int main(int argc, char **argv)
             int pixel_atual = img->pixels[y * W + x];
             int pixel_abaixo = img->pixels[(y + 1) * W + x];
 
-            // Se cruzou o limiar de Otsu (fundo -> objeto ou objeto -> fundo), achou a borda superior!
+            // Se cruzou o limiar de Otsu (fundo -> objeto ou objeto -> fundo), achou a borda superior
             if ((pixel_atual <= threshold && pixel_abaixo > threshold) ||
                 (pixel_atual > threshold && pixel_abaixo <= threshold))
             {
@@ -98,30 +95,30 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    // 3. Constrói o GRAFO DA IMAGEM INTEIRA (Torna as EDs Essenciais)
+    // 3. Constrói o o grafo da imagem inteira
     Grafo *g = criar_grafo(img);
 
-    // 4. Bloqueio Topológico: O Muro Adaptativo
-    // O pulmão começa em topo_y + 1 (pois topo_y é a última linha do fundo)
+    // 4. Ativa um muro virtual que bloqueia o Dijkstra de atravessar a borda superior.
+    // A borda começa em topo_y + 1 (pois topo_y é a última linha do fundo)
     int ref_y = topo_y + 1;
     if (ref_y >= H) ref_y = topo_y;
     
     // Descobre se o objeto é mais claro que o fundo
     int objeto_claro = (img->pixels[ref_y * W + topo_x] > threshold);
 
-    // Escaneia a imagem de cima para baixo até achar o fim do pulmão
+    // Escaneia a imagem de cima para baixo até achar o fim da borda
     int fundo_y = ref_y;
     while (fundo_y < H - 1)
     {
         int cor_atual = img->pixels[fundo_y * W + topo_x];
         int no_objeto = objeto_claro ? (cor_atual > threshold) : (cor_atual <= threshold);
         
-        // Se a cor virar a cor do fundo, significa que atravessamos o pulmão e saímos por baixo!
+        // Se a cor virar a cor do fundo, significa que atravessamos a borda e saímos por baixo
         if (!no_objeto) break; 
         fundo_y++;
     }
 
-    // O muro vai do topo da tela até 2 pixels ANTES de sair do pulmão.
+    // O muro vai do topo da tela até 2 pixels ANTES de sair da borda.
     // Isso deixa a borda inferior totalmente livre para o Dijkstra atravessar.
     int limite_muro = fundo_y - 2;
     if (limite_muro < topo_y + 1) limite_muro = topo_y + 1;
@@ -152,16 +149,11 @@ int main(int argc, char **argv)
     int origem = topo_y * W + (topo_x - 1);
     int destino = topo_y * W + topo_x;
 
-    printf("Topo detectado via Otsu: (%d, %d)\n", topo_x, topo_y);
-    printf("Origem  (Esq do muro): %d\n", origem);
-    printf("Destino (Dir do muro): %d\n", destino);
-
-    // 6. Roda o DIJKSTRA que agora é obrigado a descobrir todo o caminho
+    // 6. Roda o Dijkstra
     Caminho c = dijkstra(g, origem, destino);
 
     if (c.tamanho > 0)
     {
-        printf("[OK] Contorno fechado pelo Dijkstra: %d pixels\n", c.tamanho);
         mostrar_caminho_ascii(img, &c);
         salvar_caminho_ascii("saida_ascii.txt", img, &c);
         salvar_caminho_ppm("saida.ppm", img, &c);
