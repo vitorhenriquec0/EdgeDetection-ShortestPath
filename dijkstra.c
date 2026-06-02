@@ -37,7 +37,6 @@ static Caminho reconstruir_caminho(int *pred, int origem, int destino)
     return c;
 }
 
-// Função principal
 // Retorna o caminho mínimo entre origem e destino no grafo de pixels, que corresponde ao contorno detectado
 Caminho dijkstra(Grafo *grafo, int origem, int destino)
 {
@@ -89,7 +88,7 @@ Caminho dijkstra(Grafo *grafo, int origem, int destino)
     return resultado;
 }
 
-// Chame após o Integrante 1 terminar de gerar a imagem de saída
+// Libera memória alocada para o caminho
 void liberar_caminho(Caminho *c)
 {
     free(c->caminho);
@@ -98,7 +97,6 @@ void liberar_caminho(Caminho *c)
 }
 
 // Exibe as coordenadas (linha, col) de cada pixel do caminho
-// Útil para testar antes de ter a saída visual pronta
 void imprimir_caminho(Caminho *c, int largura)
 {
     printf("Caminho encontrado: %d pixels\n", c->tamanho);

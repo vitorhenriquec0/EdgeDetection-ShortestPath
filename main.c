@@ -5,54 +5,6 @@
 #include "grafo.h"
 #include "dijkstra.h"
 
-// Função para calcular o limiar de Otsu para segmentação automática da imagem
-static int otsu_threshold(const Imagem *img)
-{
-    int hist[256] = {0};
-    int total = img->largura * img->altura;
-    long soma_total = 0;
-
-    for (int i = 0; i < total; i++)
-    {
-        int v = img->pixels[i];
-        if (v < 0)
-            v = 0;
-        else if (v > 255)
-            v = 255;
-        hist[v]++;
-        soma_total += v;
-    }
-
-    long soma_fundo = 0;
-    int peso_fundo = 0;
-    double melhor_variancia = -1.0;
-    int melhor_t = 127;
-
-    for (int t = 0; t < 256; t++)
-    {
-        peso_fundo += hist[t];
-        if (peso_fundo == 0)
-            continue;
-
-        int peso_objeto = total - peso_fundo;
-        if (peso_objeto == 0)
-            break;
-
-        soma_fundo += (long)t * hist[t];
-        double media_fundo = (double)soma_fundo / peso_fundo;
-        double media_objeto = (double)(soma_total - soma_fundo) / peso_objeto;
-        double diferenca = media_fundo - media_objeto;
-        double variancia = (double)peso_fundo * (double)peso_objeto * diferenca * diferenca;
-
-        if (variancia > melhor_variancia)
-        {
-            melhor_variancia = variancia;
-            melhor_t = t;
-        }
-    }
-    return melhor_t;
-}
-
 int main(int argc, char **argv)
 {
     const char *arquivo_entrada = (argc > 1) ? argv[1] : "image.pgm";

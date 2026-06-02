@@ -34,5 +34,6 @@ void liberar_grafo (Grafo *g);
 void salvar_caminho_ppm(const char *arquivo, const Imagem *img, const Caminho *c); 
 void salvar_caminho_ascii(const char *arquivo, const Imagem *img, const Caminho *c);
 void mostrar_caminho_ascii(const Imagem *img, const Caminho *c);
+int otsu_threshold(const Imagem *img);
 
 #endif
