@@ -141,21 +141,6 @@ void salvar_caminho_ppm(const char *arquivo, const Imagem *img, const Caminho *c
 	fclose(f);
 }
 
-// Salva um arquivo de texto com o caminho destacado em ASCII
-void salvar_caminho_ascii(const char *arquivo, const Imagem *img, const Caminho *c) 
-{
-	FILE *f = fopen(arquivo, "w");
-	if (!f) 
-	{
-		fprintf(stderr, "[ERRO] salvar_caminho_ascii: falha ao criar\n");
-		return;
-	}
-
-	renderizar_ascii(f, img, c, 0);
-
-	fclose(f);
-}
-
 // Exibe o caminho no terminal usando ASCII
 void mostrar_caminho_ascii(const Imagem *img, const Caminho *c) 
 {

@@ -107,12 +107,11 @@ int main(int argc, char **argv)
     if (c.tamanho > 0)
     {
         mostrar_caminho_ascii(img, &c);
-        salvar_caminho_ascii("saida_ascii.txt", img, &c);
         salvar_caminho_ppm("saida.ppm", img, &c);
     }
     else
     {
-        printf("[AVISO] Caminho não encontrado\n");
+        printf("Caminho não encontrado\n");
     }
 
     liberar_caminho(&c);
