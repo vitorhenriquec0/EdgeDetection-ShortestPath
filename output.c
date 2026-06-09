@@ -37,7 +37,7 @@ static void renderizar_ascii(FILE *out, const Imagem *img, const Caminho *c, int
 	char *marca = montar_mapa_caminho(c, total_pixels);
 	if (!marca) 
 	{
-		fprintf(stderr, "[ERRO] ASCII: sem memoria\n");
+		fprintf(stderr, "Erro - ASCII: sem memoria\n");
 		return;
 	}
 
@@ -101,7 +101,7 @@ void salvar_caminho_ppm(const char *arquivo, const Imagem *img, const Caminho *c
 	FILE *f = fopen(arquivo, "w");
 	if (!f) 
 	{
-		fprintf(stderr, "[ERRO] salvar_caminho_ppm: falha ao criar\n");
+		fprintf(stderr, "Erro - salvar_caminho_ppm: falha ao criar\n");
         return; 
 	}
 
@@ -109,7 +109,7 @@ void salvar_caminho_ppm(const char *arquivo, const Imagem *img, const Caminho *c
 
 	// mapa booleano: 1 = pixel faz parte do contorno
 	char *marca = (char *)calloc(N, sizeof(char));
-	if (!marca) { fclose(f); fprintf(stderr, "[ERRO] salvar_caminho_ppm: sem memoria\n"); return; }
+	if (!marca) { fclose(f); fprintf(stderr, "Erro - salvar_caminho_ppm: sem memoria\n"); return; }
 	if (c && c->caminho) 
 	{
 		for (int i = 0; i < c->tamanho; i++) 

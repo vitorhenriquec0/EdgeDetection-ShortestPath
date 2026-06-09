@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 
     if (topo_y == -1 || topo_x <= 0)
     {
-        fprintf(stderr, "[ERRO] Não foi possível encontrar a borda do objeto.\n");
+        fprintf(stderr, "Erro - Não foi possível encontrar a borda do objeto.\n");
         liberar_imagem(img);
         return 1;
     }
