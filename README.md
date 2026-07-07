@@ -87,8 +87,8 @@ valor do proprio pixel central para evitar gradientes artificiais.
 ## Como compilar e executar
 
 ```bash
-gcc main.c dijkstra.c grafo.c pgm.c output.c min_heap.c -o contorno -lm
-./contorno imagem.pgm
+gcc main.c dijkstra.c grafo.c pgm.c output.c min_heap.c -o detect -lm
+./detect imagem.pgm
 ```
 
 Os arquivos de saida gerados sao:
